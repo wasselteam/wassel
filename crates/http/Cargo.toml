@@ -1,0 +1,12 @@
+[package]
+name = "wassel-http"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+bytes.workspace = true
+futures.workspace = true
+http-body-util.workspace = true
+hyper.workspace = true
+pin-project.workspace = true
+sync_wrapper.workspace = true

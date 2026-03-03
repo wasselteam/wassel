@@ -1,7 +1,6 @@
 use hyper::StatusCode;
+use wassel_http::{IntoResponse, Response};
 use wassel_plugin_component::PluginHandleError;
-
-use crate::response::IntoResponse;
 
 #[derive(Debug, thiserror::Error)]
 pub enum ServeError {
@@ -10,7 +9,7 @@ pub enum ServeError {
 }
 
 impl IntoResponse for ServeError {
-    fn into_response(self) -> super::response::Response {
+    fn into_response(self) -> Response {
         StatusCode::INTERNAL_SERVER_ERROR.into_response()
     }
 }

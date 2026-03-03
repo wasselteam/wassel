@@ -11,18 +11,29 @@ use wasmtime_wasi_http::{
 use crate::{errors::PluginHandleError, state::PluginState};
 
 pub struct PluginInstance {
+    id: String,
     instance: Instance,
     store: Mutex<Store<PluginState>>,
     endpoint: String,
 }
 
 impl PluginInstance {
-    pub fn new(instance: Instance, store: Mutex<Store<PluginState>>, endpoint: String) -> Self {
+    pub fn new(
+        id: String,
+        instance: Instance,
+        store: Mutex<Store<PluginState>>,
+        endpoint: String,
+    ) -> Self {
         Self {
+            id,
             instance,
             store,
             endpoint,
         }
+    }
+
+    pub fn id(&self) -> &str {
+        &self.id
     }
 
     pub async fn handle(

@@ -6,6 +6,7 @@ use std::{
 use anyhow::Context as _;
 use clap::{Args, Subcommand};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator as _};
+use wassel_plugin_stack::Stack;
 
 use crate::common::{self, build_plugin_at};
 
@@ -40,11 +41,21 @@ pub fn cmd_serve(path: &Path) -> anyhow::Result<()> {
     build_entire_stack(path)?;
     println!("All plugins built successfully");
     println!("Starting wassel server");
+
+    common::init_tracing_subscriber();
+
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()
         .context("Building tokio runtime")?
-        .block_on(wassel_server::run_server())?;
+        .block_on(async {
+            let stack = Stack::load(path).await?;
+
+            tokio::select! {
+                e = wassel_server::run_server(stack.clone()) => e,
+                e = wassel_admin_dashboard::run_admin_dashboard(stack.clone()) => e,
+            }
+        })?;
     Ok(())
 }
 

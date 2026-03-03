@@ -5,6 +5,7 @@ use std::{
 
 use anyhow::Context as _;
 use clap::{Args, Subcommand};
+use wassel_plugin_stack::Stack;
 
 use crate::common;
 
@@ -52,11 +53,16 @@ fn cmd_serve(path: &Path) -> anyhow::Result<()> {
 
     common::copy_plugin_to_plugins_folder(plugins_path, &info)?;
 
+    common::init_tracing_subscriber();
+
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()
         .context("Building tokio runtime")?
-        .block_on(wassel_server::run_server())?;
+        .block_on(async move {
+            let stack = Stack::load(path).await?;
+            wassel_server::run_server(stack).await
+        })?;
 
     Ok(())
 }

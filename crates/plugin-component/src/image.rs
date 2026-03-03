@@ -60,6 +60,7 @@ impl PluginImage {
         let mut store = wasmtime::Store::new(engine, PluginState::new(&self.data_dir)?);
         let instance = self.pre.instantiate_async(&mut store).await?;
         Ok(PluginInstance::new(
+            self.id().to_owned(),
             instance,
             Mutex::new(store),
             self.meta.endpoint.clone(),

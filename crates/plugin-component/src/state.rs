@@ -159,6 +159,16 @@ where
             std::task::Poll::Pending => std::task::Poll::Pending,
         }
     }
+
+    fn size_hint(&self) -> hyper::body::SizeHint {
+        let (lower, upper) = self.stream.size_hint();
+        let mut hint = hyper::body::SizeHint::new();
+        hint.set_lower(lower as u64);
+        if let Some(upper) = upper {
+            hint.set_upper(upper as u64);
+        }
+        hint
+    }
 }
 
 fn convert_wasi_method_to_reqwest_method(method: &WasiMethod) -> Result<Method, InvalidMethod> {

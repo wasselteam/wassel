@@ -1,21 +1,24 @@
 [package]
-name = "wassel-plugin-stack"
+name = "wassel-admin-dashboard"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
 wassel-http.workspace = true
 wassel-plugin-component.workspace = true
-wassel-world.workspace = true
+wassel-plugin-stack.workspace = true
 
 anyhow.workspace = true
 bytes.workspace = true
+config.workspace = true
 http-body-util.workspace = true
+http.workspace = true
+hyper-util.workspace = true
 hyper.workspace = true
-matchit.workspace = true
 serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+sysinfo.workspace = true
 thiserror.workspace = true
-tokio.workspace = true
-toml.workspace = true
+tokio = { workspace = true }
+tracing-subscriber.workspace = true
 tracing.workspace = true
-wasmtime.workspace = true

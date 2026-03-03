@@ -1,10 +1,11 @@
 use std::{collections::HashMap, ops::Deref, path::Path, sync::Arc};
 
 use anyhow::Context;
+use matchit::MatchError;
 use tokio::fs;
 use tracing::{debug, error, info, trace};
 use wasmtime::Engine;
-use wassel_plugin_component::{PluginImage, PluginInstance};
+use wassel_plugin_component::{PluginImage, PluginInstance, PluginMeta};
 
 use crate::config::StackConfig;
 
@@ -25,14 +26,19 @@ impl Stack {
     }
 
     pub async fn get_plugin(&self, route: &str) -> Result<Option<PluginInstance>, anyhow::Error> {
-        let name = self.router.at(route).map(|m| m.value.as_str())?;
-        let Some(image) = self.map.get(name) else {
-            return Ok(None);
+        let name = match self.router.at(route).map(|m| m.value.as_str()) {
+            Ok(name) => name,
+            Err(MatchError::NotFound) => return Ok(None),
         };
         trace!("Found plugin image for {route}");
+        let image = &self.map[name];
         let plugin = image.instantiate(&self.0.engine).await?;
         debug!("Instantiated plugin {} to handle {}", image.id(), route);
         Ok(Some(plugin))
+    }
+
+    pub fn plugin_list(&self) -> Vec<PluginMeta> {
+        self.map.values().map(|p| p.meta().to_owned()).collect()
     }
 }
 

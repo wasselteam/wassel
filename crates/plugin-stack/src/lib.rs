@@ -1,7 +1,5 @@
-mod body;
 mod config;
 mod errors;
-mod response;
 mod service;
 mod stack;
 

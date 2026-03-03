@@ -2,6 +2,8 @@
     just --list
 
 prepare:
+    biome lint --write
+    biome format --write
     cargo clippy --fix --allow-dirty -- -D warnings
     cargo test
     cargo fmt
