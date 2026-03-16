@@ -13,8 +13,10 @@ bytes.workspace = true
 config.workspace = true
 http-body-util.workspace = true
 http.workspace = true
-hyper-util.workspace = true
-hyper.workspace = true
+hyper-util = { workspace = true, features = ["server"] }
+hyper = { workspace = true, features = ["http1", "http2"] }
+include_dir.workspace = true
+matchit.workspace = true
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 sysinfo.workspace = true
@@ -22,3 +24,6 @@ thiserror.workspace = true
 tokio = { workspace = true }
 tracing-subscriber.workspace = true
 tracing.workspace = true
+
+[dev-dependencies]
+pretty_assertions.workspace = true

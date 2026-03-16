@@ -12,6 +12,7 @@ use http_body_util::{BodyExt, combinators::UnsyncBoxBody};
 use hyper::body::Frame;
 use pin_project::pin_project;
 use sync_wrapper::SyncWrapper;
+use tokio::sync::mpsc;
 
 pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
 
@@ -65,6 +66,10 @@ impl Body {
             stream: SyncWrapper::new(s),
         })
     }
+
+    pub fn from_channel<B: Into<Bytes> + Send + 'static>(r: mpsc::Receiver<B>) -> Self {
+        Self::new(ChannelBody::new(r))
+    }
 }
 
 impl hyper::body::Body for Body {
@@ -111,6 +116,31 @@ where
         match ready!(s.try_poll_next(cx)) {
             Some(Ok(data)) => Poll::Ready(Some(Ok(Frame::data(data.into())))),
             Some(Err(error)) => Poll::Ready(Some(Err(Error::new(error)))),
+            None => Poll::Ready(None),
+        }
+    }
+}
+
+pub struct ChannelBody<B: Into<Bytes>> {
+    chan: mpsc::Receiver<B>,
+}
+
+impl<B: Into<Bytes>> ChannelBody<B> {
+    pub fn new(chan: mpsc::Receiver<B>) -> Self {
+        Self { chan }
+    }
+}
+
+impl<B: Into<Bytes>> hyper::body::Body for ChannelBody<B> {
+    type Data = Bytes;
+    type Error = Error;
+
+    fn poll_frame(
+        self: Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> Poll<Option<Result<Frame<Self::Data>, Self::Error>>> {
+        match ready!(self.get_mut().chan.poll_recv(cx)) {
+            Some(msg) => Poll::Ready(Some(Ok(Frame::data(msg.into())))),
             None => Poll::Ready(None),
         }
     }

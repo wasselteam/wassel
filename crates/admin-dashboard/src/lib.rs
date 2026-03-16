@@ -3,9 +3,11 @@ use wassel_plugin_stack::Stack;
 
 use crate::server::Server;
 
-mod server;
-mod service;
-mod stats;
+pub(crate) mod router;
+pub(crate) mod server;
+pub(crate) mod service;
+pub(crate) mod sse;
+pub(crate) mod stats;
 
 pub async fn run_admin_dashboard(stack: Stack) -> anyhow::Result<()> {
     let server = Server::new(stack);

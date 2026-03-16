@@ -1,12 +1,13 @@
+mod admin-web "./crates/admin-dashboard/web/"
+
 @_default:
     just --list
 
 prepare:
-    biome lint --write
-    biome format --write
+    just admin-web::prepare
+    cargo fmt
     cargo clippy --fix --allow-dirty -- -D warnings
     cargo test
-    cargo fmt
 
 wit:
     wkg wit fetch -t wit

@@ -2,21 +2,6 @@ use serde::Serialize;
 use wassel_plugin_component::PluginMeta;
 
 #[derive(Debug, Clone, Serialize)]
-pub struct Stats {
-    pub system: SystemStats,
-    pub plugins: Vec<PluginStats>,
-}
-
-impl Stats {
-    pub fn new(plugins: Vec<PluginMeta>) -> Stats {
-        Stats {
-            system: SystemStats::load(),
-            plugins: plugins.into_iter().map(From::from).collect(),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SystemStats {
     pub memory: u64,
@@ -26,10 +11,10 @@ pub struct SystemStats {
 }
 
 impl SystemStats {
-    pub fn load() -> Self {
+    pub fn load(sysinfo: &mut sysinfo::System) -> Self {
         let pid = sysinfo::get_current_pid().unwrap();
-        let info = sysinfo::System::new_all();
-        let pinfo = info.process(pid).unwrap();
+        sysinfo.refresh_all();
+        let pinfo = sysinfo.process(pid).unwrap();
 
         Self {
             memory: pinfo.memory(),

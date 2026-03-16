@@ -1,0 +1,11 @@
+update:
+    npm install --no-audit --no-fund
+
+build: update
+    npm run build
+
+prepare: update
+    npm run check
+    npm run lint:fix
+    npm run format
+    npm run build

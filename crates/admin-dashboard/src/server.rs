@@ -1,6 +1,6 @@
 use anyhow::Context as _;
-use hyper::server::conn::http1;
-use hyper_util::rt::{TokioIo, TokioTimer};
+use hyper_util::rt::{TokioExecutor, TokioIo};
+use hyper_util::server::conn::auto;
 use tokio::net::TcpListener;
 use tracing::{error, info};
 use wassel_plugin_stack::Stack;
@@ -31,8 +31,7 @@ impl Server {
             let s = self.service.clone();
 
             tokio::task::spawn(async move {
-                if let Err(e) = http1::Builder::new()
-                    .timer(TokioTimer::new())
+                if let Err(e) = auto::Builder::new(TokioExecutor::new())
                     .serve_connection(io, s)
                     .await
                 {
