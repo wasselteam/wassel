@@ -53,7 +53,7 @@ fn cmd_serve(path: &Path) -> anyhow::Result<()> {
 
     common::copy_plugin_to_plugins_folder(plugins_path, &info)?;
 
-    common::init_tracing_subscriber();
+    wassel_subscriber::init_tracing_subscriber();
 
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()

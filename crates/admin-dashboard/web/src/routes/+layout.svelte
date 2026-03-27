@@ -40,7 +40,7 @@
   header {
     position: fixed;
     left: 0;
-    background: green;
+    background: cornflowerblue;
     height: var(--header-height);
     width: 100%;
   }
@@ -51,7 +51,7 @@
     top: var(--header-height);
     width: var(--sidebar-width);
     height: 100%;
-    background: blue;
+    background: cornflowerblue;
   }
 
   main {
@@ -63,7 +63,6 @@
   }
 
   div.content {
-    background: magenta;
     flex-grow: 1;
   }
 </style>

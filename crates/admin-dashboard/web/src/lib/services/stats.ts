@@ -1,10 +1,4 @@
-type SystemStatsHandler = (stats: SystemStats) => void;
-type EventHandler = (event: MessageEvent) => void;
-
-export interface StatsService {
-  addSystemEventListener(func: SystemStatsHandler): void;
-  removeSystemEventListener(func: SystemStatsHandler): void;
-}
+import { writable, type Readable, type Writable } from 'svelte/store';
 
 export type SystemStats = {
   memory: number;
@@ -13,35 +7,45 @@ export type SystemStats = {
   startTime: number;
 };
 
-export class SseStatsService implements StatsService {
-  private source: EventSource;
-  private handlers: Map<SystemStatsHandler, EventHandler>;
+export type TraceLevel = 'TRACE' | 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
 
-  constructor(url?: URL) {
-    this.source = new EventSource(url || '/api/stats/sse');
-    this.handlers = new Map();
-  }
+export type Trace = {
+  level: TraceLevel;
+  message: string | undefined;
+  fields: {
+    [name: string]: string;
+  };
+  timestamp: string;
+};
 
-  addSystemEventListener(func: SystemStatsHandler): void {
-    let handler = (event: MessageEvent) => {
-      const stats: SystemStats = JSON.parse(event.data);
-      func(stats);
-    };
+const makeWritables = (
+  url: URL | string = '/api/stats/sse'
+): {
+  systemStats: Readable<SystemStats>;
+  traces: Readable<Trace[]>;
+} => {
+  let source = new EventSource(url);
 
-    this.handlers.set(func, handler);
+  let systemStats: Writable<SystemStats> = writable({
+    cpuUsage: 0,
+    memory: 0,
+    virtualMemory: 0,
+    startTime: 0,
+  });
 
-    this.source.addEventListener('system', handler);
-  }
+  let traces: Writable<Trace[]> = writable([]);
 
-  removeSystemEventListener(func: SystemStatsHandler): void {
-    const handler = this.handlers.get(func);
-    if (!handler) {
-      return;
-    }
-    this.source.removeEventListener('system', handler);
-    this.handlers.delete(func);
-  }
-}
+  source.addEventListener('system', (event) => {
+    const data: SystemStats = JSON.parse(event.data);
+    systemStats.set(data);
+  });
 
-// TODO: maybe this is not a good idea
-export const statsService: StatsService = new SseStatsService();
+  source.addEventListener('trace', (event) => {
+    const data: Trace = JSON.parse(event.data);
+    traces.update((ts) => ts.concat([data]));
+  });
+
+  return { systemStats, traces };
+};
+
+export const { systemStats, traces } = makeWritables();

@@ -1,0 +1,10 @@
+[package]
+name = "wassel-subscriber"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+chrono.workspace = true
+tokio = { workspace = true, features = ["sync"] }
+tracing-subscriber.workspace = true
+tracing.workspace = true

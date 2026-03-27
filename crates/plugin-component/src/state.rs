@@ -1,4 +1,5 @@
 use anyhow::Context as _;
+use lazy_static::lazy_static;
 use wasmtime_wasi::{
     DirPerms, FilePerms, ResourceTable, WasiCtx, WasiCtxBuilder, WasiCtxView, WasiView,
 };
@@ -18,12 +19,15 @@ use wassel_world::{
     wassel::foundation::http_client::{self, IncomingResponse, OutgoingRequest},
 };
 
+lazy_static! {
+    static ref HTTP_CLIENT: reqwest::Client = reqwest::Client::new();
+}
+
 pub struct PluginState {
     ctx: WasiCtx,
     config_vars: WasiConfigVariables,
     table: ResourceTable,
     http_ctx: WasiHttpCtx,
-    http_client: reqwest::Client,
 }
 
 impl PluginState {
@@ -46,7 +50,6 @@ impl PluginState {
             config_vars: WasiConfigVariables::new(),
             table: ResourceTable::new(),
             http_ctx: WasiHttpCtx::new(),
-            http_client: reqwest::Client::new(),
         };
 
         Ok(s)
@@ -91,8 +94,7 @@ impl http_client::Host for PluginState {
         let method = convert_wasi_method_to_reqwest_method(&req.method)
             .map_err(|_| ErrorCode::HttpRequestMethodInvalid)?;
 
-        let mut request = self
-            .http_client
+        let mut request = HTTP_CLIENT
             .request(method, url)
             .headers(req.headers.clone());
 

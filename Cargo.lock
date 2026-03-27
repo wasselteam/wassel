@@ -127,6 +127,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 
 [[package]]
+name = "autocfg"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
+
+[[package]]
 name = "aws-lc-rs"
 version = "1.15.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -303,6 +309,26 @@ name = "cfg_aliases"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
+
+[[package]]
+name = "chrono"
+version = "0.4.44"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c673075a2e0e5f4a1dde27ce9dee1ea4558c7ffe648f576438a20ca1d2acc4b0"
+dependencies = [
+ "iana-time-zone",
+ "js-sys",
+ "num-traits",
+ "serde",
+ "wasm-bindgen",
+ "windows-link",
+]
+
+[[package]]
+name = "circular-buffer"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "14c638459986b83c2b885179bd4ea6a2cbb05697b001501a56adb3a3d230803b"
 
 [[package]]
 name = "clap"
@@ -1633,6 +1659,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7957b9740744892f114936ab4a57b3f487491bbeafaf8083688b16841a4240e5"
 dependencies = [
  "windows-sys 0.61.2",
+]
+
+[[package]]
+name = "num-traits"
+version = "0.2.19"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "071dfc062690e90b734c0b2273ce72ad0ffa95f0c74596bc250dcfd960262841"
+dependencies = [
+ "autocfg",
 ]
 
 [[package]]
@@ -3622,6 +3657,8 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "bytes",
+ "chrono",
+ "circular-buffer",
  "config",
  "http",
  "http-body-util",
@@ -3640,6 +3677,7 @@ dependencies = [
  "wassel-http",
  "wassel-plugin-component",
  "wassel-plugin-stack",
+ "wassel-subscriber",
 ]
 
 [[package]]
@@ -3660,6 +3698,7 @@ dependencies = [
  "wassel-plugin-component",
  "wassel-plugin-stack",
  "wassel-server",
+ "wassel-subscriber",
 ]
 
 [[package]]
@@ -3685,6 +3724,7 @@ dependencies = [
  "http",
  "http-body-util",
  "hyper",
+ "lazy_static",
  "reqwest",
  "serde",
  "thiserror 2.0.18",
@@ -3730,6 +3770,16 @@ dependencies = [
  "tracing",
  "tracing-subscriber",
  "wassel-plugin-stack",
+]
+
+[[package]]
+name = "wassel-subscriber"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

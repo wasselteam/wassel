@@ -12,6 +12,7 @@ futures-util.workspace = true
 http-body-util.workspace = true
 http.workspace = true
 hyper.workspace = true
+lazy_static.workspace = true
 reqwest.workspace = true
 serde.workspace = true
 thiserror.workspace = true

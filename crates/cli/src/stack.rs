@@ -42,7 +42,7 @@ pub fn cmd_serve(path: &Path) -> anyhow::Result<()> {
     println!("All plugins built successfully");
     println!("Starting wassel server");
 
-    common::init_tracing_subscriber();
+    let log_receiver = wassel_subscriber::init_tracing_subscriber();
 
     tokio::runtime::Builder::new_multi_thread()
         .enable_all()
@@ -53,7 +53,7 @@ pub fn cmd_serve(path: &Path) -> anyhow::Result<()> {
 
             tokio::select! {
                 e = wassel_server::run_server(stack.clone()) => e,
-                e = wassel_admin_dashboard::run_admin_dashboard(stack.clone()) => e,
+                e = wassel_admin_dashboard::run_admin_dashboard(stack.clone(), log_receiver) => e,
             }
         })?;
     Ok(())

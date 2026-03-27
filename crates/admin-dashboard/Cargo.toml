@@ -7,14 +7,17 @@ edition = "2024"
 wassel-http.workspace = true
 wassel-plugin-component.workspace = true
 wassel-plugin-stack.workspace = true
+wassel-subscriber.workspace = true
 
 anyhow.workspace = true
 bytes.workspace = true
+chrono = { workspace = true, features = ["serde"] }
+circular-buffer.workspace = true
 config.workspace = true
 http-body-util.workspace = true
 http.workspace = true
-hyper-util = { workspace = true, features = ["server"] }
 hyper = { workspace = true, features = ["http1", "http2"] }
+hyper-util = { workspace = true, features = ["server"] }
 include_dir.workspace = true
 matchit.workspace = true
 serde = { workspace = true, features = ["derive"] }

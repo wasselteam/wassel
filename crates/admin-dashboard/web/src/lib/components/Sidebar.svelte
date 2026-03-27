@@ -18,7 +18,7 @@
 
   a {
     width: 100%;
-    color: red;
-    background: yellow;
+    color: white;
+    background: blue;
   }
 </style>

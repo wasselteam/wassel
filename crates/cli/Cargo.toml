@@ -9,6 +9,7 @@ wassel-admin-dashboard.workspace = true
 wassel-plugin-component.workspace = true
 wassel-plugin-stack.workspace = true
 wassel-server.workspace = true
+wassel-subscriber.workspace = true
 
 anyhow.workspace = true
 clap = { workspace = true, features = ["derive"] }

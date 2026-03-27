@@ -7,30 +7,6 @@ use std::{
 use anyhow::{Context as _, bail};
 use serde::{Deserialize, Serialize};
 use subprocess::{Exec, Redirection};
-use tracing::level_filters::LevelFilter;
-use tracing_subscriber::EnvFilter;
-
-pub fn init_tracing_subscriber() {
-    let filter = EnvFilter::builder()
-        .with_default_directive(LevelFilter::INFO.into())
-        .from_env_lossy()
-        .add_directive("wasmtime=info".parse().expect("parsing tracing directive"))
-        .add_directive(
-            "cranelift_codegen=info"
-                .parse()
-                .expect("parsing tracing directive"),
-        )
-        .add_directive(
-            "cranelift_frontend=info"
-                .parse()
-                .expect("parsing tracing directive"),
-        );
-
-    tracing_subscriber::fmt()
-        .with_env_filter(filter)
-        .with_target(false)
-        .init();
-}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct WasselMeta {
