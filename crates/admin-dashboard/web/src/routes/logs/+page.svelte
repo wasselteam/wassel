@@ -1,15 +1,20 @@
 <script lang="ts">
-  import { traces, type Trace } from '$lib';
+  import Title from '$lib/components/Title.svelte';
+  import { traces, type Trace } from '$lib/stores';
 </script>
 
-<h1>Server Logs</h1>
-<table>
-  <tbody>
-    {#each $traces as trace (trace.timestamp)}
-      {@render message(trace)}
-    {/each}
-  </tbody>
-</table>
+<div class="content">
+  <Title text="Logs" />
+  <div class="table">
+    <table>
+      <tbody>
+        {#each $traces as trace (trace.timestamp)}
+          {@render message(trace)}
+        {/each}
+      </tbody>
+    </table>
+  </div>
+</div>
 
 {#snippet message(trace: Trace)}
   <tr>
@@ -33,10 +38,26 @@
 {/snippet}
 
 <style>
+  div.content {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+  }
+
+  div.table {
+    flex-grow: 1;
+    overflow: auto;
+    background: var(--color-surface-light);
+    border-radius: 0.3em;
+    border: grey 1px solid;
+  }
+
   table {
     border-collapse: separate;
     border-spacing: 10px 2px;
     font-family: monospace;
+    font-size: 0.7em;
   }
 
   .field-key {

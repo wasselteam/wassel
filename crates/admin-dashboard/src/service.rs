@@ -178,6 +178,7 @@ async fn handle_stats_logs(_state: Arc<State>, _req: Request<Incoming>) -> impl 
 async fn handle_stats_sse(state: Arc<State>, _req: Request<Incoming>) -> impl IntoResponse {
     let (sender, receiver) = mpsc::channel::<SseMessage>(256);
 
+    tokio::spawn(sse_plugins_task(state.clone(), sender.clone()));
     tokio::spawn(sse_stats_task(state.clone(), sender.clone()));
     tokio::spawn(sse_log_task(state.clone(), sender.clone()));
 
@@ -186,6 +187,31 @@ async fn handle_stats_sse(state: Arc<State>, _req: Request<Incoming>) -> impl In
         HeaderMap::from_iter([(CONTENT_TYPE, HeaderValue::from_static("text/event-stream"))]),
         Body::from_channel(receiver),
     )
+}
+
+async fn sse_plugins_task(
+    state: Arc<State>,
+    sender: mpsc::Sender<SseMessage>,
+) -> Result<(), anyhow::Error> {
+    let new_sse = |plugin: &PluginStats| {
+        SseMessage::new_json(plugin)
+            .expect("Could not serialize LogMessage")
+            .with_event("plugin")
+            .with_retry(Duration::from_secs(5))
+    };
+
+    let plugins: Vec<PluginStats> = state
+        .stack
+        .plugin_list()
+        .into_iter()
+        .map(Into::into)
+        .collect();
+
+    for plugin in plugins {
+        sender.send(new_sse(&plugin)).await?;
+    }
+
+    Ok(())
 }
 
 async fn sse_stats_task(

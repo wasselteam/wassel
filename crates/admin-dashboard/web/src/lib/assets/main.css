@@ -1,0 +1,10 @@
+:root {
+  --color-text-primary: #000;
+  --color-primary-light: #d3d7e5;
+  --color-primary-dark: #435082;
+  --color-surface-light: #f3f3f3;
+}
+
+.lucide {
+  fill: none;
+}

@@ -17,7 +17,6 @@ impl Service<Request<Incoming>> for Stack {
 
     fn call(&self, req: Request<Incoming>) -> Self::Future {
         let s = self.clone();
-        
 
         (Box::pin(
             async move {

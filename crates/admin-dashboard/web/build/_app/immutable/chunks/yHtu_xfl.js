@@ -1,0 +1,1 @@
+import"./DsnmJJEf.js";import{T as l,K as c,N as r}from"./D75p_wzz.js";import{d as i,b as n,a as f,f as m,s as p}from"./NbmX20P1.js";var u=m('<button class="svelte-18sv61c"> </button>');function h(a,e){var t=u(),s=c(t,!0);r(t),l(()=>p(s,e.label)),n("click",t,function(...o){e.onclick?.apply(this,o)}),f(a,t)}i(["click"]);export{h as B};
