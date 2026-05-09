@@ -2,6 +2,7 @@ use anyhow::{Context, bail};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::HashMap,
+    env,
     path::{Path, PathBuf},
 };
 use tokio::fs;
@@ -50,7 +51,7 @@ impl StackConfig {
             loop {
                 match read_dir.next_entry().await {
                     Ok(Some(dir)) => {
-                        read_plugin_entry(&mut plugins, &mut plugin_paths, &dir)
+                        read_plugin_entry(&mut plugins, &mut plugin_paths, &dir, &meta.variables)
                             .await
                             .context(format!(
                                 "Reading plugin entry in `{}`",
@@ -84,9 +85,10 @@ async fn read_plugin_entry(
     plugins: &mut HashMap<String, PluginMeta>,
     plugin_paths: &mut HashMap<String, PathBuf>,
     dir: &fs::DirEntry,
+    variables: &HashMap<String, String>,
 ) -> Result<(), anyhow::Error> {
     let plugin_meta_path = dir.path().join("plugin.toml");
-    let plugin_meta: PluginMeta =
+    let mut plugin_meta: PluginMeta =
         toml::from_slice(&fs::read(&plugin_meta_path).await.context(format!(
             "Reading plugin meta at `{}`",
             plugin_meta_path.to_string_lossy()
@@ -95,6 +97,24 @@ async fn read_plugin_entry(
             "Deserializing plugin meta at `{}`",
             plugin_meta_path.to_string_lossy()
         ))?;
+
+    for (name, value) in variables {
+        if plugin_meta.variables.contains_key(name) {
+            continue;
+        }
+
+        plugin_meta
+            .variables
+            .insert(name.to_owned(), value.to_owned());
+    }
+
+    let envs = HashMap::<String, String>::from_iter(env::vars());
+    for value in plugin_meta.variables.values_mut() {
+        if let Ok(val) = subst::substitute(value, &envs) {
+            *value = val;
+        }
+    }
+
     let id = plugin_meta.id.clone();
 
     if let Some(val) = plugins.insert(id.clone(), plugin_meta) {

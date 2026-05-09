@@ -22,6 +22,7 @@ enum Command {
 }
 
 fn main() -> anyhow::Result<()> {
+    let _ = dotenvy::dotenv();
     let args = Args::parse();
     match args.cmd {
         Command::Stack(stack_args) => stack::run(stack_args),

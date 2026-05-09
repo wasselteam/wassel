@@ -14,6 +14,7 @@ http-body-util.workspace = true
 hyper.workspace = true
 matchit.workspace = true
 serde = { workspace = true, features = ["derive"] }
+subst.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 toml.workspace = true

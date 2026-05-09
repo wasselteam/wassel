@@ -13,6 +13,7 @@ wassel-subscriber.workspace = true
 
 anyhow.workspace = true
 clap = { workspace = true, features = ["derive"] }
+dotenvy.workspace = true
 rayon.workspace = true
 serde = { workspace = true, features = ["derive"] }
 subprocess.workspace = true

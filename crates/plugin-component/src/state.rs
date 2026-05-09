@@ -6,7 +6,7 @@ use wasmtime_wasi::{
 use wasmtime_wasi_config::WasiConfigVariables;
 use wasmtime_wasi_http::{WasiHttpCtx, WasiHttpView, body::HostIncomingBody};
 
-use std::{path::Path, pin::Pin, time::Duration};
+use std::{collections::HashMap, path::Path, pin::Pin, time::Duration};
 
 use bytes::Bytes;
 use futures_util::{Stream, TryStreamExt as _};
@@ -34,7 +34,10 @@ pub struct PluginState {
 }
 
 impl PluginState {
-    pub fn new(data_dir: impl AsRef<Path>) -> anyhow::Result<Self> {
+    pub fn new(
+        data_dir: impl AsRef<Path>,
+        config: &HashMap<String, String>,
+    ) -> anyhow::Result<Self> {
         let ctx = {
             let mut builder = WasiCtxBuilder::new();
             builder.inherit_stdout();
@@ -50,7 +53,7 @@ impl PluginState {
 
         let s = Self {
             ctx,
-            config_vars: WasiConfigVariables::new(),
+            config_vars: WasiConfigVariables::from_iter(config),
             table: ResourceTable::new(),
             http_ctx: WasiHttpCtx::new(),
         };
