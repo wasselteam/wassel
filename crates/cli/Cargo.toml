@@ -5,6 +5,12 @@ edition.workspace = true
 license.workspace = true
 default-run = "wassel-cli"
 
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/{ name }-{ target }{ archive-suffix }"
+bin-dir = "{ bin }{ binary-ext }"
+pkg-fmt = "bin"
+disabled-strategies = ["quick-install", "compile"]
+
 [dependencies]
 wassel-admin-dashboard.workspace = true
 wassel-plugin-component.workspace = true
