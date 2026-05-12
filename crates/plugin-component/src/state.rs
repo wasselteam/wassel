@@ -1,10 +1,12 @@
-use anyhow::Context as _;
 use lazy_static::lazy_static;
 use wasmtime_wasi::{
     DirPerms, FilePerms, ResourceTable, WasiCtx, WasiCtxBuilder, WasiCtxView, WasiView,
 };
 use wasmtime_wasi_config::WasiConfigVariables;
-use wasmtime_wasi_http::{WasiHttpCtx, WasiHttpView, body::HostIncomingBody};
+use wasmtime_wasi_http::{
+    FieldMap, WasiHttpCtx,
+    p2::{WasiHttpCtxView, WasiHttpView, body::HostIncomingBody},
+};
 
 use std::{collections::HashMap, path::Path, pin::Pin, time::Duration};
 
@@ -13,7 +15,7 @@ use futures_util::{Stream, TryStreamExt as _};
 use http::Method;
 use http::method::InvalidMethod;
 use http_body_util::{BodyExt as _, combinators::UnsyncBoxBody};
-use wasmtime::component::Resource;
+use wasmtime::{component::Resource, error::Context as _};
 use wassel_world::{
     wasi::http::types::{ErrorCode, Method as WasiMethod},
     wassel::foundation::{
@@ -76,12 +78,12 @@ impl WasiView for PluginState {
 }
 
 impl WasiHttpView for PluginState {
-    fn ctx(&mut self) -> &mut WasiHttpCtx {
-        &mut self.http_ctx
-    }
-
-    fn table(&mut self) -> &mut ResourceTable {
-        &mut self.table
+    fn http(&mut self) -> WasiHttpCtxView<'_> {
+        WasiHttpCtxView {
+            ctx: &mut self.http_ctx,
+            table: &mut self.table,
+            hooks: Default::default(),
+        }
     }
 }
 
@@ -102,7 +104,7 @@ impl http_client::Host for PluginState {
 
         let mut request = HTTP_CLIENT
             .request(method, url)
-            .headers(req.headers.clone());
+            .headers(req.headers.clone().into());
 
         if let Some(body) = req.body.take() {
             let body = reqwest::Body::wrap_stream(body.into_data_stream());
@@ -126,7 +128,7 @@ impl http_client::Host for PluginState {
 
         let response = IncomingResponse {
             status,
-            headers,
+            headers: FieldMap::new_immutable(headers),
             body: Some(incoming_body),
         };
 
@@ -205,7 +207,7 @@ impl postgres::HostConnectionConfig for PluginState {
         &mut self,
         connection_string: String,
     ) -> Result<Resource<postgres::ConnectionConfig>, wasmtime::Error> {
-        let rep = self.table().push(postgres::ConnectionConfig {
+        let rep = self.table.push(postgres::ConnectionConfig {
             string: connection_string,
         })?;
 
@@ -213,7 +215,7 @@ impl postgres::HostConnectionConfig for PluginState {
     }
 
     async fn drop(&mut self, rep: Resource<postgres::ConnectionConfig>) -> wasmtime::Result<()> {
-        self.table().delete(rep)?;
+        self.table.delete(rep)?;
         Ok(())
     }
 }
@@ -224,14 +226,14 @@ impl postgres::HostConnection for PluginState {
         config: Resource<postgres::ConnectionConfig>,
     ) -> Result<Resource<postgres::Connection>, postgres::Error> {
         let config = self
-            .table()
+            .table
             .get(&config)
             .map_err(|e| postgres::Error::Other(e.to_string()))?;
 
         let conn = postgres::Connection::new(config).await.unwrap();
 
         // TODO: error handling
-        let res = self.table().push(conn).unwrap();
+        let res = self.table.push(conn).unwrap();
 
         Ok(res)
     }
@@ -243,7 +245,7 @@ impl postgres::HostConnection for PluginState {
         sql: String,
         params: Vec<postgres::Parameter>,
     ) -> Result<postgres::RowSet, postgres::Error> {
-        let conn = self.table().get(&self_)?;
+        let conn = self.table.get(&self_)?;
 
         let rows = conn.query(&sql, &params).await?;
 
@@ -277,14 +279,14 @@ impl postgres::HostConnection for PluginState {
         sql: String,
         params: Vec<postgres::Parameter>,
     ) -> Result<u64, postgres::Error> {
-        let conn = self.table().get(&self_)?;
+        let conn = self.table.get(&self_)?;
         let affected = conn.execute(&sql, &params).await?;
 
         Ok(affected)
     }
 
     async fn drop(&mut self, rep: Resource<postgres::Connection>) -> wasmtime::Result<()> {
-        self.table().delete(rep)?;
+        self.table.delete(rep)?;
         Ok(())
     }
 }

@@ -1,5 +1,5 @@
 use tokio::sync::oneshot::error::RecvError;
-use wasmtime_wasi_http::bindings::http::types::ErrorCode;
+use wasmtime_wasi_http::p2::bindings::http::types::ErrorCode;
 
 #[derive(Debug, thiserror::Error)]
 pub enum PluginHandleError {

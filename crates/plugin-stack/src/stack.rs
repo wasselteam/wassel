@@ -1,10 +1,9 @@
 use std::{collections::HashMap, ops::Deref, path::Path, sync::Arc};
 
-use anyhow::Context;
 use matchit::MatchError;
 use tokio::fs;
 use tracing::{debug, error, info, trace};
-use wasmtime::Engine;
+use wasmtime::{Engine, error::Context as _};
 use wassel_plugin_component::{PluginImage, PluginInstance, PluginMeta};
 
 use crate::config::StackConfig;
@@ -50,18 +49,20 @@ pub struct StackInner {
 
 impl StackInner {
     pub async fn load(base_path: impl AsRef<Path>) -> anyhow::Result<Self> {
-        let config = StackConfig::load(&base_path).await.context(format!(
-            "Loading config in `{}`",
-            base_path.as_ref().to_string_lossy()
-        ))?;
+        let config = anyhow::Context::context(
+            StackConfig::load(&base_path).await,
+            format!(
+                "Loading config in `{}`",
+                base_path.as_ref().to_string_lossy()
+            ),
+        )?;
 
         info!("Loading plugins");
         let mut successes = 0;
         let mut errors = 0;
 
         let engine = {
-            let mut config = wasmtime::Config::new();
-            config.async_support(true);
+            let config = wasmtime::Config::new();
             Engine::new(&config).context("Creating Engine")?
         };
 

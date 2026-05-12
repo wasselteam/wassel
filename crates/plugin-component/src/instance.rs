@@ -5,7 +5,7 @@ use hyper::{Request, Response, body::Incoming};
 use tokio::sync::{Mutex, MutexGuard};
 use wasmtime::{Store, component::Instance};
 use wasmtime_wasi_http::{
-    WasiHttpView as _, bindings::http::types::Scheme, body::HyperOutgoingBody,
+    p2::WasiHttpView as _, p2::bindings::http::types::Scheme, p2::body::HyperOutgoingBody,
 };
 
 use crate::{errors::PluginHandleError, state::PluginState};
@@ -63,11 +63,13 @@ impl PluginInstance {
 
         let req = store
             .data_mut()
+            .http()
             .new_incoming_request(Scheme::Http, req)
             .map_err(PluginHandleError::CreateResource)?;
 
         let out = store
             .data_mut()
+            .http()
             .new_response_outparam(sender)
             .map_err(PluginHandleError::CreateResource)?;
 
