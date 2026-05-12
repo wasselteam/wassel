@@ -2,6 +2,13 @@
 members = ["crates/*"]
 resolver = "3"
 
+[workspace.package]
+version = "1.0.0"
+authors = ["Albert Shefner <usn0emo@gmail.com>"]
+edition = "2024"
+license = "Apache-2.0 with LLVM exception"
+license-file = "LICENSE"
+
 [workspace.dependencies]
 wassel-admin-dashboard = { path = "crates/admin-dashboard" }
 wassel-cli = { path = "crates/cli" }

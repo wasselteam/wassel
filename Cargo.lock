@@ -3980,7 +3980,7 @@ dependencies = [
 
 [[package]]
 name = "wassel-admin-dashboard"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "bytes",
@@ -4009,7 +4009,7 @@ dependencies = [
 
 [[package]]
 name = "wassel-cli"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -4031,7 +4031,7 @@ dependencies = [
 
 [[package]]
 name = "wassel-http"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "bytes",
  "futures",
@@ -4044,7 +4044,7 @@ dependencies = [
 
 [[package]]
 name = "wassel-plugin-component"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "bytes",
@@ -4068,7 +4068,7 @@ dependencies = [
 
 [[package]]
 name = "wassel-plugin-stack"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "bytes",
@@ -4089,7 +4089,7 @@ dependencies = [
 
 [[package]]
 name = "wassel-server"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "config",
@@ -4104,7 +4104,7 @@ dependencies = [
 
 [[package]]
 name = "wassel-subscriber"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "chrono",
  "tokio",
@@ -4114,7 +4114,7 @@ dependencies = [
 
 [[package]]
 name = "wassel-world"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "tokio",
  "tokio-postgres",
