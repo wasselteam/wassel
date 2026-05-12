@@ -3,6 +3,7 @@ name = "wassel-admin-dashboard"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+repository.workspace = true
 
 [dependencies]
 wassel-http.workspace = true

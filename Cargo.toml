@@ -8,6 +8,7 @@ authors = ["Albert Shefner <usn0emo@gmail.com>"]
 edition = "2024"
 license = "Apache-2.0 with LLVM exception"
 license-file = "LICENSE"
+repository = "https://github.com/wasselteam/wassel"
 
 [workspace.dependencies]
 wassel-admin-dashboard = { path = "crates/admin-dashboard" }
