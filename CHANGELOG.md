@@ -7,10 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - yyyy-mm-dd
 
+## [1.1.1] - 2026-05-12
+
 ### Fixed
 
 - [ci] Add `repository` key to packages so cargo-binstall could find the binaries
 - [runtime] Update all Rust dependencies
+
+[1.1.1]: https://github.com/wasselteam/wassel/releases/tag/v1.1.1
 
 ## [1.1.0] - 2026-05-12
 
