@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [ci] GitHub CI to make a new release
 - [ci] Add cargo-binstall support for `wassel-cli`
 
+### Fixed
+
+- [ci] Make check and release workflows separate
+
 [1.1.0]: https://github.com/wasselteam/wassel/releases/tag/v1.1.0
 
 ## [1.0.0] - 2026-05-12
