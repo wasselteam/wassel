@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased] - yyyy-mm-dd
 
+### Added
+
+- [interface] New postgres types in WIT
+- [interface] Support for converting i16, f32 and f64 types
+- [tests] Postgres test component
+
+### Changed
+
+- [interface] Aliased `postgres::Parameter` to `postgres::Value`
+- [interface] BREAKING: Renamed `postgres::Value::Unsupported` to `postgres::Value::Other`
+
 ## [1.1.1] - 2026-05-12
 
 ### Fixed

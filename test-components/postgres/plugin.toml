@@ -1,0 +1,8 @@
+id = "rust-postgres"
+name = "Rust Plugin with Postgres"
+version = "0.0.0"
+component = "${CARGO_TARGET_DIR:target}/wasm32-wasip2/debug/rust_postgres.wasm"
+endpoint = "/test/postgres/"
+
+[build]
+cmd = "cargo build --target wasm32-wasip2"

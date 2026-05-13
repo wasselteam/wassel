@@ -8,3 +8,5 @@ deps/
 *.wasm
 *.wat
 .env
+
+.DS_Store

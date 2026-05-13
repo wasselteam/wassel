@@ -1,0 +1,12 @@
+[package]
+name = "rust-postgres"
+version = "2.0.0"
+edition = "2024"
+
+[workspace]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wassel-sdk = { git = "https://github.com/wasselteam/sdk-rust.git", rev = "14d6f82b4312245893503b37f567672093b0293c" }

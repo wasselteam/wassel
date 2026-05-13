@@ -6,7 +6,7 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-tokio-postgres.workspace = true
+tokio-postgres = { workspace = true, features = ["with-chrono-0_4", "with-uuid-1"] }
 tokio.workspace = true
 wasmtime-wasi-http.workspace = true
 wasmtime-wasi.workspace = true

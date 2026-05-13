@@ -1,0 +1,6 @@
+@_default:
+    just --list
+
+prepare:
+    cargo clippy --target wasm32-wasip2 --fix --allow-dirty -- -Dwarnings
+    cargo fmt

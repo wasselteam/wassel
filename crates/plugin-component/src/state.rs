@@ -230,15 +230,16 @@ impl postgres::HostConnection for PluginState {
             .get(&config)
             .map_err(|e| postgres::Error::Other(e.to_string()))?;
 
-        let conn = postgres::Connection::new(config).await.unwrap();
+        let conn = postgres::Connection::new(config).await?;
 
-        // TODO: error handling
-        let res = self.table.push(conn).unwrap();
+        let res = self
+            .table
+            .push(conn)
+            .map_err(|e| postgres::Error::Other(e.to_string()))?;
 
         Ok(res)
     }
 
-    #[doc = "/ Query the database"]
     async fn query(
         &mut self,
         self_: Resource<postgres::Connection>,

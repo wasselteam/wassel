@@ -65,17 +65,56 @@ impl Drop for PgConnection {
 }
 
 impl postgres::Parameter {
+    fn data_type(&self) -> postgres::DataType {
+        match self {
+            postgres::Value::Boolean(_) => postgres::DataType::Boolean,
+            postgres::Value::Int16(_) => postgres::DataType::Int16,
+            postgres::Value::Int32(_) => postgres::DataType::Int32,
+            postgres::Value::Int64(_) => postgres::DataType::Int64,
+            postgres::Value::Float32(_) => postgres::DataType::Float32,
+            postgres::Value::Float64(_) => postgres::DataType::Float64,
+            postgres::Value::Decimal(_) => postgres::DataType::Decimal,
+            postgres::Value::Money(_) => postgres::DataType::Money,
+            postgres::Value::Uuid(_) => postgres::DataType::Uuid,
+            postgres::Value::Text(_) => postgres::DataType::Text,
+            postgres::Value::Binary(_) => postgres::DataType::Binary,
+            postgres::Value::Date(_) => postgres::DataType::Date,
+            postgres::Value::Time(_) => postgres::DataType::Time,
+            postgres::Value::Datetime(_) => postgres::DataType::Datetime,
+            postgres::Value::Interval(_) => postgres::DataType::Interval,
+            postgres::Value::RangeInt32(_) => postgres::DataType::RangeInt32,
+            postgres::Value::RangeInt64(_) => postgres::DataType::RangeInt64,
+            postgres::Value::RangeDecimal(_) => postgres::DataType::RangeDecimal,
+            postgres::Value::ArrayInt32(_) => postgres::DataType::ArrayInt32,
+            postgres::Value::ArrayInt64(_) => postgres::DataType::ArrayInt64,
+            postgres::Value::ArrayDecimal(_) => postgres::DataType::ArrayDecimal,
+            postgres::Value::ArrayStr(_) => postgres::DataType::ArrayStr,
+            postgres::Value::Jsonb(_) => postgres::DataType::Jsonb,
+            postgres::Value::Hstore(_) => postgres::DataType::Hstore,
+            postgres::Value::Point(_) => postgres::DataType::Point,
+            postgres::Value::Circle(_) => postgres::DataType::Circle,
+            postgres::Value::Line(_) => postgres::DataType::Line,
+            postgres::Value::LineSegment(_) => postgres::DataType::LineSegment,
+            postgres::Value::Path(_) => postgres::DataType::Path,
+            postgres::Value::Polygon(_) => postgres::DataType::Polygon,
+            postgres::Value::Cube(_) => postgres::DataType::Cube,
+            _ => postgres::DataType::Other("UNKNOWN".to_owned()),
+        }
+    }
+
     // TODO: Utilize DataType
     fn get_oid(&self) -> Type {
-        match self {
-            postgres::Parameter::Binary(_) => Type::BYTEA,
-            postgres::Parameter::Boolean(_) => Type::BOOL,
-            postgres::Parameter::Int32(_) => Type::INT4,
-            postgres::Parameter::Int64(_) => Type::INT8,
-            postgres::Parameter::Text(_) => Type::TEXT,
-            postgres::Parameter::Timestamp(_) => Type::TIMESTAMP,
-            postgres::Parameter::Uuid(_) => Type::UUID,
-            postgres::Parameter::PgNull => Type::ANY,
+        match self.data_type() {
+            postgres::DataType::Binary => Type::BYTEA,
+            postgres::DataType::Boolean => Type::BOOL,
+            postgres::DataType::Int32 => Type::INT4,
+            postgres::DataType::Int64 => Type::INT8,
+            postgres::DataType::Text => Type::TEXT,
+            postgres::DataType::Datetime => Type::TIMESTAMP,
+            postgres::DataType::Uuid => Type::UUID,
+            postgres::DataType::PgNull => Type::ANY,
+            // TODO: Other types
+            _ => Type::UNKNOWN,
         }
     }
 }
@@ -88,14 +127,15 @@ impl<'a> FromSql<'a> for postgres::Value {
         let val = match *ty {
             Type::BYTEA => Self::Binary(Vec::<u8>::from_sql(ty, raw)?),
             Type::BOOL => Self::Boolean(bool::from_sql(ty, raw)?),
+            Type::INT2 => Self::Int16(i16::from_sql(ty, raw)?),
             Type::INT4 => Self::Int32(i32::from_sql(ty, raw)?),
             Type::INT8 => Self::Int64(i64::from_sql(ty, raw)?),
+            Type::FLOAT4 => Self::Float32(f32::from_sql(ty, raw)?),
+            Type::FLOAT8 => Self::Float64(f64::from_sql(ty, raw)?),
             Type::TEXT => Self::Text(String::from_sql(ty, raw)?),
-            Type::TIMESTAMP => todo!(),
-            Type::UUID => todo!(),
-            //
-            // pg-null,
-            _ => Self::Unsupported(raw.to_vec()),
+            Type::TIMESTAMP => return Err("TIMESTAMP is not yet implemented".into()),
+            Type::UUID => return Err("UUID is not yet implemented".into()),
+            _ => Self::Other(raw.to_vec()),
         };
 
         Ok(val)
@@ -122,12 +162,22 @@ impl ToSql for postgres::Parameter {
         match self {
             postgres::Parameter::Binary(val) => val.to_sql(ty, out),
             postgres::Parameter::Boolean(val) => val.to_sql(ty, out),
+            postgres::Parameter::Int16(val) => val.to_sql(ty, out),
             postgres::Parameter::Int32(val) => val.to_sql(ty, out),
             postgres::Parameter::Int64(val) => val.to_sql(ty, out),
+            postgres::Parameter::Float32(val) => val.to_sql(ty, out),
+            postgres::Parameter::Float64(val) => val.to_sql(ty, out),
             postgres::Parameter::Text(val) => val.to_sql(ty, out),
-            postgres::Parameter::Timestamp(val) => val.to_sql(ty, out),
-            postgres::Parameter::Uuid(val) => val.to_sql(ty, out),
+            postgres::Parameter::Datetime(_) => {
+                Err("Datetime is not yet implemented".into())
+            }
+            postgres::Parameter::Uuid(_) => Err("Uuid is not yet implemented".into()),
             postgres::Parameter::PgNull => Ok(IsNull::Yes),
+            _ => {
+                Err(
+                    format!("{} is not yet implemented", self.get_oid()).into(),
+                )
+            }
         }
     }
 
@@ -149,7 +199,7 @@ impl From<tokio_postgres::types::Type> for postgres::DataType {
             Type::INT4 => Self::Int32,
             Type::INT8 => Self::Int64,
             Type::TEXT => Self::Text,
-            Type::TIMESTAMP => Self::Timestamp,
+            Type::TIMESTAMP => Self::Datetime,
             Type::UUID => Self::Uuid,
             _ => Self::Other(value.to_string()),
         }
