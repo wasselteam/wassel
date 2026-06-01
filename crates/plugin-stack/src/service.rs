@@ -70,9 +70,7 @@ async fn handle_request(s: Stack, req: Request<Incoming>) -> (Response, Option<S
     let (mut parts, body) = response.into_parts();
     parts.headers.insert(
         "x-wassel-plugin",
-        plugin
-            .id()
-            .parse()
+        id.parse()
             .expect("Plugin ID should not be invalid header value"),
     );
 

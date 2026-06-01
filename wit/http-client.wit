@@ -5,5 +5,6 @@ interface http-client {
 
     type url = string;
 
+    /// Send outbound HTTP request and get incoming response
     send: func(url: url, req: outgoing-request) -> result<incoming-response, error-code>;
 }

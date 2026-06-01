@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 
-use tokio::sync::Mutex;
 use wasmtime::{
     Engine,
     component::{Component, HasSelf, InstancePre},
@@ -71,7 +70,7 @@ impl PluginImage {
         Ok(PluginInstance::new(
             self.id().to_owned(),
             instance,
-            Mutex::new(store),
+            store,
             self.meta.endpoint.clone(),
         ))
     }

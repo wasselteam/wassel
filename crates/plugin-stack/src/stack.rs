@@ -3,7 +3,7 @@ use std::{collections::HashMap, ops::Deref, path::Path, sync::Arc};
 use matchit::MatchError;
 use tokio::fs;
 use tracing::{debug, error, info, trace};
-use wasmtime::{Engine, error::Context as _};
+use wasmtime::{Engine, InstanceAllocationStrategy, PoolingAllocationConfig, error::Context as _};
 use wassel_plugin_component::{PluginImage, PluginInstance, PluginMeta};
 
 use crate::config::StackConfig;
@@ -62,8 +62,23 @@ impl StackInner {
         let mut errors = 0;
 
         let engine = {
-            let config = wasmtime::Config::new();
-            Engine::new(&config).context("Creating Engine")?
+            let mut pool = PoolingAllocationConfig::new();
+            pool.total_memories(1000);
+            pool.max_memory_size(1 << 32); // 4 GiB
+            pool.total_tables(1000);
+            pool.table_elements(20000);
+            pool.total_core_instances(1000);
+
+            Engine::new(
+                wasmtime::Config::new()
+                    .strategy(wasmtime::Strategy::Cranelift)
+                    .signals_based_traps(true)
+                    .memory_reservation(1 << 32)
+                    .memory_guard_size(1 << 32)
+                    .allocation_strategy(InstanceAllocationStrategy::Pooling(pool))
+                    .memory_init_cow(true),
+            )
+            .context("Creating Engine")?
         };
 
         let mut map = HashMap::new();

@@ -13,7 +13,7 @@ use crate::{errors::PluginHandleError, state::PluginState};
 pub struct PluginInstance {
     id: String,
     instance: Instance,
-    store: Mutex<Store<PluginState>>,
+    store: Store<PluginState>,
     endpoint: String,
 }
 
@@ -21,7 +21,7 @@ impl PluginInstance {
     pub fn new(
         id: String,
         instance: Instance,
-        store: Mutex<Store<PluginState>>,
+        store: Store<PluginState>,
         endpoint: String,
     ) -> Self {
         Self {
@@ -37,13 +37,10 @@ impl PluginInstance {
     }
 
     pub async fn handle(
-        &self,
+        mut self,
         mut req: Request<Incoming>,
     ) -> Result<Response<HyperOutgoingBody>, PluginHandleError> {
         let (sender, reciever) = tokio::sync::oneshot::channel();
-
-        let mut store_guard = self.store.lock().await;
-        let mut store = MutexGuard::deref_mut(&mut store_guard);
 
         let mut parts = req.uri().clone().into_parts();
         let paq = parts
@@ -61,29 +58,42 @@ impl PluginInstance {
         *req.uri_mut() =
             Uri::from_parts(parts).expect("URI should still be valid after stripping prefix");
 
-        let req = store
+        let req = self
+            .store
             .data_mut()
             .http()
             .new_incoming_request(Scheme::Http, req)
             .map_err(PluginHandleError::CreateResource)?;
 
-        let out = store
+        let out = self
+            .store
             .data_mut()
             .http()
             .new_response_outparam(sender)
             .map_err(PluginHandleError::CreateResource)?;
 
-        let proxy = wassel_world::HttpPlugin::new(&mut store, &self.instance)
-            .map_err(PluginHandleError::Guest)?;
+        let task = tokio::spawn(async move {
+            let mut store = self.store;
+            let proxy = wassel_world::HttpPlugin::new(&mut store, &self.instance)
+                .map_err(PluginHandleError::Guest)?;
 
-        proxy
-            .wassel_foundation_http_handler()
-            .call_handle_request(&mut store, req, out)
-            .await
-            .map_err(PluginHandleError::CallingHandleMethod)?;
+            proxy
+                .wassel_foundation_http_handler()
+                .call_handle_request(&mut store, req, out)
+                .await
+                .map_err(PluginHandleError::CallingHandleMethod)?;
 
-        let response = reciever.await??;
+            Ok::<(), PluginHandleError>(())
+        });
 
-        Ok(response)
+        match reciever.await {
+            Ok(Ok(response)) => Ok(response),
+            Ok(Err(error)) => Err(error.into()),
+            Err(_) => match task.await {
+                Ok(Ok(())) => Err(PluginHandleError::ResponseOutparamWasNotSet),
+                Ok(Err(error)) => Err(error),
+                Err(error) => Err(error.into()),
+            },
+        }
     }
 }

@@ -17,4 +17,10 @@ pub enum PluginHandleError {
 
     #[error("Could not create component guest")]
     Guest(wasmtime::Error),
+
+    #[error("Guest never invoked `response-outparam::set` method")]
+    ResponseOutparamWasNotSet,
+
+    #[error("Could not join tokio task: {0}")]
+    TaskJoin(#[from] tokio::task::JoinError),
 }
