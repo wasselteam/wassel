@@ -1,8 +1,7 @@
-use std::{ops::DerefMut as _, str::FromStr};
+use std::str::FromStr;
 
 use http::{Uri, uri::PathAndQuery};
 use hyper::{Request, Response, body::Incoming};
-use tokio::sync::{Mutex, MutexGuard};
 use wasmtime::{Store, component::Instance};
 use wasmtime_wasi_http::{
     p2::WasiHttpView as _, p2::bindings::http::types::Scheme, p2::body::HyperOutgoingBody,

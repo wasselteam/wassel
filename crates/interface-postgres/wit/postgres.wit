@@ -1,4 +1,4 @@
-package wassel:foundation;
+package wassel:postgres;
 
 interface postgres {
     /// Config defines settings to open connection

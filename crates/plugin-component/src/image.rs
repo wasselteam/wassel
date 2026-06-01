@@ -36,10 +36,7 @@ impl PluginImage {
             .context("Adding WASI HTTP tp linker")?;
         wasmtime_wasi_config::add_to_linker(&mut linker, |c| WasiConfig::from(c.config_vars()))
             .context("Adding WASI config to linker")?;
-        wassel_world::wassel::foundation::postgres::add_to_linker::<_, HasSelf<_>>(
-            &mut linker,
-            |s| s,
-        )?;
+        wassel_interface_postgres::add_to_linker(&mut linker)?;
 
         let export = "wassel:foundation/http-handler";
         if component.get_export(None, export).is_none() {

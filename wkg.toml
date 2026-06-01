@@ -1,0 +1,2 @@
+[overrides]
+"wassel:postgres" = { path = "./crates/interface-postgres/wit/" }

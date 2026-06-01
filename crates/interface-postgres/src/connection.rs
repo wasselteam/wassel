@@ -5,7 +5,7 @@ use tokio_postgres::{
 };
 use wasmtime_wasi::ResourceTableError;
 
-use crate::wassel::foundation::postgres;
+use crate::bindings::wassel::postgres::postgres;
 
 pub struct PgConnectionConfig {
     pub string: String,
@@ -168,16 +168,10 @@ impl ToSql for postgres::Parameter {
             postgres::Parameter::Float32(val) => val.to_sql(ty, out),
             postgres::Parameter::Float64(val) => val.to_sql(ty, out),
             postgres::Parameter::Text(val) => val.to_sql(ty, out),
-            postgres::Parameter::Datetime(_) => {
-                Err("Datetime is not yet implemented".into())
-            }
+            postgres::Parameter::Datetime(_) => Err("Datetime is not yet implemented".into()),
             postgres::Parameter::Uuid(_) => Err("Uuid is not yet implemented".into()),
             postgres::Parameter::PgNull => Ok(IsNull::Yes),
-            _ => {
-                Err(
-                    format!("{} is not yet implemented", self.get_oid()).into(),
-                )
-            }
+            _ => Err(format!("{} is not yet implemented", self.get_oid()).into()),
         }
     }
 

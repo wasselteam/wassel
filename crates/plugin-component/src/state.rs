@@ -7,6 +7,7 @@ use wasmtime_wasi_http::{
     FieldMap, WasiHttpCtx,
     p2::{WasiHttpCtxView, WasiHttpView, body::HostIncomingBody},
 };
+use wassel_interface_postgres::{PostgresCtxView, PostgresView};
 
 use std::{collections::HashMap, path::Path, pin::Pin, time::Duration};
 
@@ -18,10 +19,7 @@ use http_body_util::{BodyExt as _, combinators::UnsyncBoxBody};
 use wasmtime::{component::Resource, error::Context as _};
 use wassel_world::{
     wasi::http::types::{ErrorCode, Method as WasiMethod},
-    wassel::foundation::{
-        http_client::{self, IncomingResponse, OutgoingRequest},
-        postgres,
-    },
+    wassel::foundation::http_client::{self, IncomingResponse, OutgoingRequest},
 };
 
 lazy_static! {
@@ -83,6 +81,14 @@ impl WasiHttpView for PluginState {
             ctx: &mut self.http_ctx,
             table: &mut self.table,
             hooks: Default::default(),
+        }
+    }
+}
+
+impl PostgresView for PluginState {
+    fn postgres(&mut self) -> PostgresCtxView<'_> {
+        PostgresCtxView {
+            table: &mut self.table,
         }
     }
 }
@@ -200,100 +206,4 @@ fn convert_wasi_method_to_reqwest_method(method: &WasiMethod) -> Result<Method, 
 
 fn convert_reqwest_error_to_error_code(e: reqwest::Error) -> ErrorCode {
     ErrorCode::InternalError(Some(format!("Reqwest error: {e:?}")))
-}
-
-impl postgres::HostConnectionConfig for PluginState {
-    async fn new(
-        &mut self,
-        connection_string: String,
-    ) -> Result<Resource<postgres::ConnectionConfig>, wasmtime::Error> {
-        let rep = self.table.push(postgres::ConnectionConfig {
-            string: connection_string,
-        })?;
-
-        Ok(rep)
-    }
-
-    async fn drop(&mut self, rep: Resource<postgres::ConnectionConfig>) -> wasmtime::Result<()> {
-        self.table.delete(rep)?;
-        Ok(())
-    }
-}
-
-impl postgres::HostConnection for PluginState {
-    async fn open(
-        &mut self,
-        config: Resource<postgres::ConnectionConfig>,
-    ) -> Result<Resource<postgres::Connection>, postgres::Error> {
-        let config = self
-            .table
-            .get(&config)
-            .map_err(|e| postgres::Error::Other(e.to_string()))?;
-
-        let conn = postgres::Connection::new(config).await?;
-
-        let res = self
-            .table
-            .push(conn)
-            .map_err(|e| postgres::Error::Other(e.to_string()))?;
-
-        Ok(res)
-    }
-
-    async fn query(
-        &mut self,
-        self_: Resource<postgres::Connection>,
-        sql: String,
-        params: Vec<postgres::Parameter>,
-    ) -> Result<postgres::RowSet, postgres::Error> {
-        let conn = self.table.get(&self_)?;
-
-        let rows = conn.query(&sql, &params).await?;
-
-        if rows.is_empty() {
-            return Ok(postgres::RowSet {
-                columns: vec![],
-                rows: vec![],
-            });
-        }
-
-        let columns = rows[0].columns().iter().map(Into::into).collect();
-
-        let rows = rows
-            .into_iter()
-            .map(|row| {
-                let mut result: Vec<postgres::Value> = Vec::with_capacity(row.len());
-                for index in 0..row.len() {
-                    result.push(row.try_get(index)?);
-                }
-                Ok(result)
-            })
-            .collect::<Result<Vec<_>, Box<dyn std::error::Error>>>()
-            .map_err(|e| postgres::Error::Query(e.to_string()))?;
-
-        Ok(postgres::RowSet { columns, rows })
-    }
-
-    async fn execute(
-        &mut self,
-        self_: Resource<postgres::Connection>,
-        sql: String,
-        params: Vec<postgres::Parameter>,
-    ) -> Result<u64, postgres::Error> {
-        let conn = self.table.get(&self_)?;
-        let affected = conn.execute(&sql, &params).await?;
-
-        Ok(affected)
-    }
-
-    async fn drop(&mut self, rep: Resource<postgres::Connection>) -> wasmtime::Result<()> {
-        self.table.delete(rep)?;
-        Ok(())
-    }
-}
-
-impl postgres::Host for PluginState {
-    fn convert_error(&mut self, err: postgres::Error) -> wasmtime::Result<postgres::Error> {
-        Ok(err)
-    }
 }

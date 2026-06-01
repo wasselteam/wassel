@@ -14,7 +14,7 @@ world platform {
     include wasi:sockets/imports@0.2.10;
 
     import http-client;
-    import postgres;
+    import wassel:postgres/postgres;
 }
 
 interface http-handler {

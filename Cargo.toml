@@ -14,6 +14,7 @@ repository = "https://github.com/wasselteam/wassel"
 wassel-admin-dashboard = { path = "crates/admin-dashboard" }
 wassel-cli = { path = "crates/cli" }
 wassel-http = { path = "crates/http" }
+wassel-interface-postgres = { path = "crates/interface-postgres" }
 wassel-plugin-component = { path = "crates/plugin-component" }
 wassel-plugin-stack = { path = "crates/plugin-stack" }
 wassel-server = { path = "crates/server" }

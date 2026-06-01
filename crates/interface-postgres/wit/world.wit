@@ -1,0 +1,5 @@
+package wassel:postgres;
+
+world platform-postgres {
+    import postgres;
+}

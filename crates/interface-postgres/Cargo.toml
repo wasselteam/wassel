@@ -1,14 +1,12 @@
 [package]
-name = "wassel-world"
+name = "wassel-interface-postgres"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 repository.workspace = true
 
 [dependencies]
+wasmtime.workspace = true
 tokio-postgres = { workspace = true, features = ["with-chrono-0_4", "with-uuid-1"] }
 tokio.workspace = true
-wasmtime-wasi-http.workspace = true
 wasmtime-wasi.workspace = true
-wasmtime.workspace = true
-wassel-interface-postgres.workspace = true

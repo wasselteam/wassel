@@ -4048,6 +4048,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "wassel-interface-postgres"
+version = "1.1.1"
+dependencies = [
+ "tokio",
+ "tokio-postgres",
+ "wasmtime",
+ "wasmtime-wasi",
+]
+
+[[package]]
 name = "wassel-plugin-component"
 version = "1.1.1"
 dependencies = [
@@ -4068,6 +4078,7 @@ dependencies = [
  "wasmtime-wasi",
  "wasmtime-wasi-config",
  "wasmtime-wasi-http",
+ "wassel-interface-postgres",
  "wassel-world",
 ]
 
@@ -4126,6 +4137,7 @@ dependencies = [
  "wasmtime",
  "wasmtime-wasi",
  "wasmtime-wasi-http",
+ "wassel-interface-postgres",
 ]
 
 [[package]]
