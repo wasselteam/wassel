@@ -21,3 +21,7 @@ rust-plugin:
         ./plugins/rust-plugin/plugin.wasm
     cp  ./examples/rust-plugin/plugin.toml \
         ./plugins/rust-plugin/plugin.toml
+
+integrational-test:
+    curl -i --fail-with-body localhost:9000/test/postgres/select
+    curl -i --fail-with-body localhost:9000/test/postgres/bind

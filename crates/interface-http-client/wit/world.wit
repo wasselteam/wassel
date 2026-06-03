@@ -1,0 +1,5 @@
+package wassel:http-client;
+
+world platform-http-client {
+    import http-client;
+}

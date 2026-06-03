@@ -134,13 +134,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rust-postgres"
-version = "2.0.0"
-dependencies = [
- "wassel-sdk",
-]
-
-[[package]]
 name = "semver"
 version = "1.0.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -197,6 +190,13 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "test-postgres"
+version = "2.0.0"
+dependencies = [
+ "wassel-sdk",
 ]
 
 [[package]]
@@ -276,9 +276,10 @@ dependencies = [
 
 [[package]]
 name = "wassel-sdk"
-version = "2.1.0"
-source = "git+https://github.com/wasselteam/sdk-rust.git?rev=14d6f82b4312245893503b37f567672093b0293c#14d6f82b4312245893503b37f567672093b0293c"
+version = "2.1.2"
+source = "git+https://github.com/wasselteam/sdk-rust.git?rev=5909c141bcb1314664dae4498fda6dd91bb6beb1#5909c141bcb1314664dae4498fda6dd91bb6beb1"
 dependencies = [
+ "bytes",
  "http",
  "thiserror",
  "wasip2",
@@ -288,8 +289,8 @@ dependencies = [
 
 [[package]]
 name = "wassel-sdk-macros"
-version = "2.1.0"
-source = "git+https://github.com/wasselteam/sdk-rust.git?rev=14d6f82b4312245893503b37f567672093b0293c#14d6f82b4312245893503b37f567672093b0293c"
+version = "2.1.2"
+source = "git+https://github.com/wasselteam/sdk-rust.git?rev=5909c141bcb1314664dae4498fda6dd91bb6beb1#5909c141bcb1314664dae4498fda6dd91bb6beb1"
 dependencies = [
  "quote",
  "syn",

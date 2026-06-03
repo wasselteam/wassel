@@ -2,11 +2,9 @@ use std::path::PathBuf;
 
 use wasmtime::{
     Engine,
-    component::{Component, HasSelf, InstancePre},
+    component::{Component, InstancePre},
     error::Context as _,
 };
-use wasmtime_wasi_config::WasiConfig;
-use wassel_world::wassel::foundation;
 
 use crate::{instance::PluginInstance, meta::PluginMeta, state::PluginState};
 
@@ -26,17 +24,7 @@ impl PluginImage {
         let component = Component::new(engine, bytes).context("Creating WASM component")?;
 
         let mut linker = wasmtime::component::Linker::<PluginState>::new(engine);
-
-        foundation::http_client::add_to_linker::<_, HasSelf<PluginState>>(&mut linker, |s| s)
-            .context("Could not add wassel:foundation/http-client to linker")?;
-
-        wasmtime_wasi::p2::add_to_linker_async(&mut linker)
-            .context("Adding WASIp2 exports to linker")?;
-        wasmtime_wasi_http::p2::add_only_http_to_linker_async(&mut linker)
-            .context("Adding WASI HTTP tp linker")?;
-        wasmtime_wasi_config::add_to_linker(&mut linker, |c| WasiConfig::from(c.config_vars()))
-            .context("Adding WASI config to linker")?;
-        wassel_interface_postgres::add_to_linker(&mut linker)?;
+        wassel_world::add_to_linker(&mut linker).context("Could not add wassel world to linker")?;
 
         let export = "wassel:foundation/http-handler";
         if component.get_export(None, export).is_none() {

@@ -2,7 +2,7 @@ use std::error::Error;
 use std::fmt::Debug;
 
 use wassel_sdk::{
-    bindings::wassel::foundation::postgres::{self, Parameter, Value},
+    bindings::wassel::postgres::postgres::{self, Parameter, Value},
     http::{IntoResponse, Request, Response, StatusCode, handler},
 };
 

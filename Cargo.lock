@@ -4048,6 +4048,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "wassel-interface-http-client"
+version = "1.1.1"
+dependencies = [
+ "futures-util",
+ "http",
+ "http-body-util",
+ "hyper",
+ "reqwest",
+ "wasmtime",
+ "wasmtime-wasi-http",
+]
+
+[[package]]
 name = "wassel-interface-postgres"
 version = "1.1.1"
 dependencies = [
@@ -4078,6 +4091,7 @@ dependencies = [
  "wasmtime-wasi",
  "wasmtime-wasi-config",
  "wasmtime-wasi-http",
+ "wassel-interface-http-client",
  "wassel-interface-postgres",
  "wassel-world",
 ]
@@ -4132,11 +4146,11 @@ dependencies = [
 name = "wassel-world"
 version = "1.1.1"
 dependencies = [
- "tokio",
- "tokio-postgres",
  "wasmtime",
  "wasmtime-wasi",
+ "wasmtime-wasi-config",
  "wasmtime-wasi-http",
+ "wassel-interface-http-client",
  "wassel-interface-postgres",
 ]
 

@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [interface] Aliased `postgres::Parameter` to `postgres::Value`
 - [interface] BREAKING: Renamed `postgres::Value::Unsupported` to `postgres::Value::Other`
+- [interface] BREAKING: Moved `wassel:foundation/postgres` to `wassel:postgres/postgres`
+- [interface] BREAKING: Moved `wassel:foundation/http-client` to `wassel:http-client/http-client`
+- [runtime] Refactor postgres interface into separate crate
+- [runtime] Refactor http-client interface into separate crate
 
 ## [1.1.1] - 2026-05-12
 

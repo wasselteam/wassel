@@ -1,26 +1,19 @@
+use std::{collections::HashMap, path::Path};
+
 use lazy_static::lazy_static;
 use wasmtime_wasi::{
     DirPerms, FilePerms, ResourceTable, WasiCtx, WasiCtxBuilder, WasiCtxView, WasiView,
 };
 use wasmtime_wasi_config::WasiConfigVariables;
 use wasmtime_wasi_http::{
-    FieldMap, WasiHttpCtx,
-    p2::{WasiHttpCtxView, WasiHttpView, body::HostIncomingBody},
+    WasiHttpCtx,
+    p2::{WasiHttpCtxView, WasiHttpView},
 };
+use wassel_interface_http_client::{HttpClientCtxView, HttpClientView};
 use wassel_interface_postgres::{PostgresCtxView, PostgresView};
 
-use std::{collections::HashMap, path::Path, pin::Pin, time::Duration};
-
-use bytes::Bytes;
-use futures_util::{Stream, TryStreamExt as _};
-use http::Method;
-use http::method::InvalidMethod;
-use http_body_util::{BodyExt as _, combinators::UnsyncBoxBody};
-use wasmtime::{component::Resource, error::Context as _};
-use wassel_world::{
-    wasi::http::types::{ErrorCode, Method as WasiMethod},
-    wassel::foundation::http_client::{self, IncomingResponse, OutgoingRequest},
-};
+use wasmtime::error::Context as _;
+use wassel_world::{WasiConfigCtxView, WasiConfigView};
 
 lazy_static! {
     static ref HTTP_CLIENT: reqwest::Client = reqwest::Client::new();
@@ -85,6 +78,14 @@ impl WasiHttpView for PluginState {
     }
 }
 
+impl WasiConfigView for PluginState {
+    fn wasi_config(&mut self) -> WasiConfigCtxView<'_> {
+        WasiConfigCtxView {
+            variables: &self.config_vars,
+        }
+    }
+}
+
 impl PostgresView for PluginState {
     fn postgres(&mut self) -> PostgresCtxView<'_> {
         PostgresCtxView {
@@ -93,117 +94,11 @@ impl PostgresView for PluginState {
     }
 }
 
-impl http_client::Host for PluginState {
-    async fn send(
-        &mut self,
-        url: http_client::Url,
-        req: Resource<OutgoingRequest>,
-    ) -> Result<Resource<IncomingResponse>, ErrorCode> {
-        let req = self.table.get_mut(&req).map_err(|e| {
-            ErrorCode::InternalError(Some(format!(
-                "Could not get OutgoingRequest resource: {e:?}"
-            )))
-        })?;
-
-        let method = convert_wasi_method_to_reqwest_method(&req.method)
-            .map_err(|_| ErrorCode::HttpRequestMethodInvalid)?;
-
-        let mut request = HTTP_CLIENT
-            .request(method, url)
-            .headers(req.headers.clone().into());
-
-        if let Some(body) = req.body.take() {
-            let body = reqwest::Body::wrap_stream(body.into_data_stream());
-            request = request.body(body);
-        }
-
-        let response = request
-            .send()
-            .await
-            .map_err(convert_reqwest_error_to_error_code)?;
-
-        let status = response.status().into();
-        let headers = response.headers().to_owned();
-
-        let body_stream = Box::pin(response.bytes_stream());
-
-        let hyper_body = UnsyncBoxBody::new(StreamBody {
-            stream: body_stream,
-        });
-        let incoming_body = HostIncomingBody::new(hyper_body, Duration::from_secs(5));
-
-        let response = IncomingResponse {
-            status,
-            headers: FieldMap::new_immutable(headers),
-            body: Some(incoming_body),
-        };
-
-        let resource = self.table.push(response).map_err(|e| {
-            ErrorCode::InternalError(Some(format!(
-                "Could not create IncomingResponse resource: {e:?}"
-            )))
-        })?;
-
-        Ok(resource)
-    }
-}
-
-struct StreamBody<S> {
-    stream: S,
-}
-
-impl<S> hyper::body::Body for StreamBody<Pin<Box<S>>>
-where
-    S: Stream<Item = reqwest::Result<Bytes>>,
-{
-    type Data = Bytes;
-
-    type Error = ErrorCode;
-
-    fn poll_frame(
-        self: std::pin::Pin<&mut Self>,
-        cx: &mut std::task::Context<'_>,
-    ) -> std::task::Poll<Option<Result<hyper::body::Frame<Self::Data>, Self::Error>>> {
-        match self.get_mut().stream.try_poll_next_unpin(cx) {
-            std::task::Poll::Ready(v) => match v {
-                Some(result) => std::task::Poll::Ready(Some(match result {
-                    Ok(bytes) => Ok(hyper::body::Frame::data(bytes)),
-                    Err(e) => Err(convert_reqwest_error_to_error_code(e)),
-                })),
-                None => std::task::Poll::Ready(None),
-            },
-            std::task::Poll::Pending => std::task::Poll::Pending,
+impl HttpClientView for PluginState {
+    fn http_client(&mut self) -> HttpClientCtxView<'_> {
+        HttpClientCtxView {
+            table: &mut self.table,
+            client: &HTTP_CLIENT,
         }
     }
-
-    fn size_hint(&self) -> hyper::body::SizeHint {
-        let (lower, upper) = self.stream.size_hint();
-        let mut hint = hyper::body::SizeHint::new();
-        hint.set_lower(lower as u64);
-        if let Some(upper) = upper {
-            hint.set_upper(upper as u64);
-        }
-        hint
-    }
-}
-
-fn convert_wasi_method_to_reqwest_method(method: &WasiMethod) -> Result<Method, InvalidMethod> {
-    let method = match method {
-        WasiMethod::Get => Method::GET,
-        WasiMethod::Head => Method::HEAD,
-        WasiMethod::Post => Method::POST,
-        WasiMethod::Put => Method::PUT,
-        WasiMethod::Delete => Method::DELETE,
-        WasiMethod::Connect => Method::CONNECT,
-        WasiMethod::Options => Method::OPTIONS,
-        WasiMethod::Trace => Method::TRACE,
-        WasiMethod::Patch => Method::PATCH,
-        WasiMethod::Other(m) => Method::from_bytes(m.as_bytes())?,
-    };
-
-    Ok(method)
-}
-
-fn convert_reqwest_error_to_error_code(e: reqwest::Error) -> ErrorCode {
-    ErrorCode::InternalError(Some(format!("Reqwest error: {e:?}")))
 }
