@@ -6,8 +6,9 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-wassel-interface-postgres.workspace = true
 wassel-interface-http-client.workspace = true
+wassel-interface-postgres.workspace = true
+wassel-interface-redis.workspace = true
 wassel-world.workspace = true
 
 anyhow.workspace = true

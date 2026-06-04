@@ -15,6 +15,7 @@ world platform {
 
     import wassel:http-client/http-client;
     import wassel:postgres/postgres;
+    import wassel:redis/redis;
 }
 
 interface http-handler {

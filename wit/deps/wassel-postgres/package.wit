@@ -8,7 +8,7 @@ interface postgres {
 
   /// A connection to a postgres database
   resource connection {
-    /// Open a connection to the database at `address`
+    /// Open a connection to the database
     open: static func(config: connection-config) -> result<connection, error>;
     /// Query the database
     query: func(sql: string, params: list<parameter>) -> result<row-set, error>;

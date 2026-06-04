@@ -10,8 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - [interface] New postgres types in WIT
-- [interface] Support for converting i16, f32 and f64 types
+- [interface] Support for converting i16, f32 and f64 types in postgres
 - [tests] Postgres test component
+- [interface] Initial Redis support
 
 ### Changed
 

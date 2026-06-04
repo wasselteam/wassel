@@ -1,3 +1,4 @@
 [overrides]
 "wassel:postgres" = { path = "./crates/interface-postgres/wit/" }
+"wassel:redis" = { path = "./crates/interface-redis/wit/" }
 "wassel:http-client" = { path = "./crates/interface-http-client/wit/" }

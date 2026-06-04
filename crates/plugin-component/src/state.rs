@@ -13,6 +13,7 @@ use wassel_interface_http_client::{HttpClientCtxView, HttpClientView};
 use wassel_interface_postgres::{PostgresCtxView, PostgresView};
 
 use wasmtime::error::Context as _;
+use wassel_interface_redis::{RedisCtxView, RedisView};
 use wassel_world::{WasiConfigCtxView, WasiConfigView};
 
 lazy_static! {
@@ -99,6 +100,14 @@ impl HttpClientView for PluginState {
         HttpClientCtxView {
             table: &mut self.table,
             client: &HTTP_CLIENT,
+        }
+    }
+}
+
+impl RedisView for PluginState {
+    fn redis(&mut self) -> RedisCtxView<'_> {
+        RedisCtxView {
+            table: &mut self.table,
         }
     }
 }

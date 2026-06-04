@@ -1,0 +1,5 @@
+package wassel:redis;
+
+world platform-redis {
+    import redis;
+}

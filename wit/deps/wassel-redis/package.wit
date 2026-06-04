@@ -1,0 +1,138 @@
+package wassel:redis;
+
+interface redis {
+  /// Config defines settings to open connection
+  resource connection-config {
+    constructor(connection-string: string);
+  }
+
+  /// A connection to a Redis instance
+  resource connection {
+    /// Open a connection to the Redis instance
+    open: static func(config: connection-config) -> result<connection, error>;
+    /// Execute an arbitrary Redis command and receive the result.
+    execute: func(command: string, arguments: list<redis-argument>) -> result<redis-value, error>;
+  }
+
+  /// Errors interacting with Redis
+  variant error {
+    /// A retrieved value was not of the correct type
+    type-error(string),
+    /// Error communicationg with Redis instance
+    server-error(string),
+    /// Some other error occurred
+    other(string),
+  }
+
+  /// Arguent of `execute` method
+  variant redis-argument {
+    i64(s64),
+    str(string),
+  }
+
+  /// `VerbatimString`'s format types defined by spec
+  variant verbatim-format {
+    /// Unknown type to catch future formats.
+    unknown(string),
+    /// `mkd` format
+    markdown,
+    /// `txt` format
+    text,
+  }
+
+  /// First String is format and other is the string
+  record verbatim-string {
+    /// Text's format type
+    format: verbatim-format,
+    /// Remaining string check format before using!
+    text: string,
+  }
+
+  /// `Push` type's currently known kinds.
+  variant push-kind {
+    /// `Disconnection` is sent from the **library** when connection is closed.
+    disconnection,
+    /// Other kind to catch future kinds.
+    other(string),
+    /// `invalidate` is received when a key is changed/deleted.
+    invalidate,
+    /// `message` is received when pubsub message published by another client.
+    message,
+    /// `pmessage` is received when pubsub message published by another client and client subscribed to topic via pattern.
+    pmessage,
+    /// `smessage` is received when pubsub message published by another client and client subscribed to it with sharding.
+    smessage,
+    /// `unsubscribe` is received when client unsubscribed from a channel.
+    unsubscribe,
+    /// `punsubscribe` is received when client unsubscribed from a pattern.
+    punsubscribe,
+    /// `sunsubscribe` is received when client unsubscribed from a shard channel.
+    sunsubscribe,
+    /// `subscribe` is received when client subscribed to a channel.
+    subscribe,
+    /// `psubscribe` is received when client subscribed to a pattern.
+    psubscribe,
+    /// `ssubscribe` is received when client subscribed to a shard channel.
+    ssubscribe,
+  }
+
+  /// Recursive redis value
+  resource lazy-redis-value {
+    constructor(value: redis-value);
+    /// Consume resource and get inner value
+    get: static func(value: lazy-redis-value) -> redis-value;
+  }
+
+  /// Attribute value from the server.
+  record attribute {
+    /// Data that attributes belong to.
+    data: lazy-redis-value,
+    /// Key,Value list of attributes.
+    attributes: list<tuple<lazy-redis-value, lazy-redis-value>>,
+  }
+
+  /// Push data from the server.
+  record push {
+    /// Push Kind
+    kind: push-kind,
+    /// Remaining data from push message
+    data: list<lazy-redis-value>,
+  }
+
+  /// Redis value
+  variant redis-value {
+    /// A nil response from the server.
+    nil,
+    /// An integer response.
+    int(s64),
+    /// An arbitrary binary data, usually represents a binary-safe string.
+    bulk-string(list<u8>),
+    /// A response containing an array with more data. This is generally used by redis
+    /// to express nested structures.
+    array(list<lazy-redis-value>),
+    /// A simple string response, without line breaks and not binary safe.
+    simple-string(string),
+    /// A status response which represents the string "OK".
+    okay,
+    /// Unordered key,value list from the server. Use `as_map_iter` function.
+    %map(list<tuple<lazy-redis-value, lazy-redis-value>>),
+    /// Attribute value from the server.
+    attribute(attribute),
+    /// Unordered set value from the server.
+    set(list<lazy-redis-value>),
+    /// A floating number response from the server.
+    double(f64),
+    /// A boolean response from the server.
+    boolean(bool),
+    /// First String is format and other is the string
+    verbatim-string(verbatim-string),
+    /// Very large number that out of the range of the signed 64 bit numbers
+    big-number(string),
+    /// Push data from the server.
+    push(push),
+  }
+}
+
+world platform-redis {
+  import redis;
+}

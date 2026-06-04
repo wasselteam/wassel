@@ -8,3 +8,8 @@ services:
       POSTGRES_PASSWORD: "wassel-test"
     ports:
       - "127.0.0.1:25432:5432"
+
+  redis:
+    image: docker.io/redis:8.8.0
+    ports:
+      - '6379:6379'

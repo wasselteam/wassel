@@ -1,0 +1,11 @@
+[package]
+name = "wassel-interface-redis"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+redis = { workspace = true, features = ["tokio-comp"] }
+wasmtime-wasi.workspace = true
+wasmtime.workspace = true
