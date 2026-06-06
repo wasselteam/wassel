@@ -1,5 +1,16 @@
 package wasi:clocks@0.2.10;
 
+interface wall-clock {
+  record datetime {
+    seconds: u64,
+    nanoseconds: u32,
+  }
+
+  now: func() -> datetime;
+
+  resolution: func() -> datetime;
+}
+
 interface monotonic-clock {
   use wasi:io/poll@0.2.10.{pollable};
 
@@ -16,14 +27,17 @@ interface monotonic-clock {
   subscribe-duration: func(when: duration) -> pollable;
 }
 
-interface wall-clock {
-  record datetime {
-    seconds: u64,
-    nanoseconds: u32,
+interface timezone {
+  use wall-clock.{datetime};
+
+  record timezone-display {
+    utc-offset: s32,
+    name: string,
+    in-daylight-saving-time: bool,
   }
 
-  now: func() -> datetime;
+  display: func(when: datetime) -> timezone-display;
 
-  resolution: func() -> datetime;
+  utc-offset: func(when: datetime) -> s32;
 }
 
