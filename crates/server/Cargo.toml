@@ -8,11 +8,11 @@ repository.workspace = true
 [dependencies]
 wassel-plugin-stack.workspace = true
 
-serde = { workspace = true, features = ["derive"] }
 anyhow.workspace = true
 config.workspace = true
-hyper-util.workspace = true
+hyper-util = { workspace = true, features = ["server"] }
 hyper.workspace = true
+serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["full"] }
 tracing-subscriber.workspace = true
 tracing.workspace = true

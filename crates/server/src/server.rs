@@ -1,7 +1,9 @@
 use anyhow::Context as _;
-use hyper::server::conn::http1;
-use hyper_util::rt::{TokioIo, TokioTimer};
-use tokio::net::TcpListener;
+use hyper_util::{
+    rt::{TokioExecutor, TokioIo},
+    server::conn::auto,
+};
+use tokio::net::{TcpListener, TcpStream};
 use tracing::{error, info};
 
 use wassel_plugin_stack::Stack;
@@ -19,31 +21,32 @@ impl Server {
     }
 
     pub async fn serve(&self) -> anyhow::Result<()> {
-        let addr = format!(
-            "{host}:{port}",
-            host = &self.config.host,
-            port = &self.config.port
-        );
-        info!("Starting server at {addr}");
-        let listener = TcpListener::bind(&addr)
-            .await
-            .context("Binding to {addr}")?;
+        let listener = self.bind().await?;
 
         loop {
             let (tcp, _) = listener.accept().await.context("Accepting connection")?;
             let io = TokioIo::new(tcp);
+            let stack = self.stack.clone();
+            tokio::task::spawn(Self::handle_connection(io, stack));
+        }
+    }
 
-            let service = self.stack.clone();
+    async fn bind(&self) -> anyhow::Result<TcpListener> {
+        let addr = format!(
+            "{host}:{port}",
+            host = &self.config.host,
+            port = self.config.port
+        );
+        info!("Starting server at {addr}");
+        TcpListener::bind(&addr).await.context("Binding to {addr}")
+    }
 
-            tokio::task::spawn(async move {
-                if let Err(e) = http1::Builder::new()
-                    .timer(TokioTimer::new())
-                    .serve_connection(io, service)
-                    .await
-                {
-                    error!("Error serving: {e:?}");
-                }
-            });
+    async fn handle_connection(io: TokioIo<TcpStream>, stack: Stack) {
+        if let Err(e) = auto::Builder::new(TokioExecutor::new())
+            .serve_connection_with_upgrades(io, stack)
+            .await
+        {
+            error!("Error serving: {e:?}");
         }
     }
 }
